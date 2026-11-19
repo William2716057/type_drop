@@ -1,43 +1,32 @@
-'use strict';
+const http = require('http');
+const fs = require('fs');
+const path = require('path');
 
-var http = require('http');
-var fs = require('fs');
-var path = require('path');
+const port = process.env.PORT || 1337;
+const types = {
+    '.html': 'text/html; charset=utf-8',
+    '.js': 'text/javascript; charset=utf-8',
+    '.css': 'text/css; charset=utf-8',
+    '.json': 'application/json',
+    '.png': 'image/png',
+    '.svg': 'image/svg+xml',
+    '.ico': 'image/x-icon'
+};
 
-var port = process.env.PORT || 1337;
+http.createServer((req, res) => {
+    const pathname = decodeURIComponent(new URL(req.url, 'http://localhost').pathname);
+    const rel = pathname === '/' ? 'index.html' : pathname.slice(1);
+    const file = path.join(__dirname, rel);
 
-http.createServer(function (req, res) {
-    var filePath = '.' + req.url;
-
-    if (filePath === './') {
-        filePath = './index.html';
+    if (!file.startsWith(__dirname)) {
+        res.writeHead(403); return res.end('Forbidden');
     }
-
-    var extname = String(path.extname(filePath)).toLowerCase();
-    var contentType = 'text/html';
-
-    var mimeTypes = {
-        '.html': 'text/html',
-        '.js': 'text/javascript',
-        '.css': 'text/css',
-    };
-
-    contentType = mimeTypes[extname] || 'application/octet-stream';
-
-    fs.readFile(filePath, function (error, content) {
-        if (error) {
-            if (error.code === 'ENOENT') {
-                res.writeHead(404, { 'Content-Type': 'text/plain' });
-                res.end('404 Not Found, this page does not exist');
-            } else {
-                res.writeHead(500, { 'Content-Type': 'text/plain' });
-                res.end('500 Internal Server Error: ' + error.code);
-            }
-        } else {
-            res.writeHead(200, { 'Content-Type': contentType });
-            res.end(content, 'utf-8');
+    fs.readFile(file, (err, data) => {
+        if (err) {
+            res.writeHead(404, { 'Content-Type': 'text/plain' });
+            return res.end('Not found: ' + pathname);
         }
+        res.writeHead(200, { 'Content-Type': types[path.extname(file)] || 'application/octet-stream' });
+        res.end(data);
     });
-}).listen(port);
-
-console.log('Server running at http://127.0.0.1:' + port + '/');
+}).listen(port, () => console.log('Serving on http://localhost:' + port));

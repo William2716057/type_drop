@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>Letter Drop</title>
+    <!--<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700&display=swap" rel="stylesheet">-->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="app">
+        <canvas id="c" aria-label="Falling letters game"></canvas>
+        <div id="hud"><div><small>Score</small><b id="score">0</b></div><div id="lives" aria-label="Lives"></div><div><small>Best</small><b id="best">0</b></div></div>
+        <div id="combo"></div>
+        <div id="panel">
+            <h1 id="title">Letter Drop</h1>
+            <p id="msg">Press the letter shown on each circle before it reaches the bottom. Five misses and it’s over.</p>
+            <button id="go">Start typing</button>
+            <a href="index.html">Change mode</a>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>

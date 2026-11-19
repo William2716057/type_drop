@@ -3,11 +3,15 @@
     const $ = id => document.getElementById(id);
     const panel = $('panel'), scoreEl = $('score'), bestEl = $('best'), livesEl = $('lives'), comboEl = $('combo');
     const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const morse = new URLSearchParams(location.search).get('mode') === 'morse';
+    const KEY = 'letterdrop-best-' + (morse ? 'morse' : 'english');
+    const MORSE = { A: '.-', B: '-...', C: '-.-.', D: '-..', E: '.', F: '..-.', G: '--.', H: '....', I: '..', J: '.---', K: '-.-', L: '.-..', M: '--', N: '-.', O: '---', P: '.--.', Q: '--.-', R: '.-.', S: '...', T: '-', U: '..-', V: '...-', W: '.--', X: '-..-', Y: '-.--', Z: '--..' };
+    const label = ch => MORSE[ch].replace(/\./g, '\u2022').replace(/-/g, '\u2013').split('').join('\u2009');
     const LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
     let W = 0, H = 0, balls = [], bursts = [], score = 0, lives = 5, combo = 0, spawnT = 0, flash = 0;
     let running = false, paused = false, last = 0, best = 0;
 
-    try { best = +localStorage.getItem('letterdrop-best') || 0; } catch (e) { }
+    try { best = +localStorage.getItem(KEY) || 0; } catch (e) { }
     bestEl.textContent = best;
 
     function resize() {
@@ -19,7 +23,7 @@
     addEventListener('resize', resize); resize();
 
     const hue = ch => (ch.charCodeAt(0) - 65) * 41 % 360;
-    const radius = () => Math.max(24, Math.min(34, W / 14));
+    const radius = () => Math.max(24, Math.min(34, W / 14)) * (morse ? 1.35 : 1);
 
     function spawn() {
         const onScreen = new Set(balls.map(b => b.ch));
@@ -28,7 +32,7 @@
         const r = radius();
         balls.push({
             ch: pool[Math.random() * pool.length | 0], x: r + 10 + Math.random() * (W - 2 * r - 20), y: -r,
-            r, vy: 55 + Math.min(score * 1.8, 150) + Math.random() * 25, sway: Math.random() * 6.28
+            r, vy: (55 + Math.min(score * 1.8, 150) + Math.random() * 25) * (morse ? .8 : 1), sway: Math.random() * 6.28
         });
     }
 
@@ -50,7 +54,7 @@
         running = false;
         if (score > best) {
             best = score; bestEl.textContent = best;
-            try { localStorage.setItem('letterdrop-best', best); } catch (e) { }
+            try { localStorage.setItem(KEY, best); } catch (e) { }
         }
         $('title').textContent = 'Game over';
         $('msg').textContent = 'You popped ' + score + ' letters. Best: ' + best + '.';
@@ -93,8 +97,8 @@
             g.addColorStop(0, 'hsl(' + h + ',80%,78%)'); g.addColorStop(1, 'hsl(' + h + ',65%,48%)');
             ctx.beginPath(); ctx.arc(b.x, b.y, b.r, 0, 6.2832); ctx.fillStyle = g; ctx.fill();
             ctx.lineWidth = 2; ctx.strokeStyle = 'rgba(255,255,255,.55)'; ctx.stroke();
-            ctx.fillStyle = '#10222a'; ctx.font = '700 ' + (b.r * 1.1) + 'px "Baloo 2",ui-rounded,system-ui,sans-serif';
-            ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(b.ch, b.x, b.y + b.r * .06);
+            ctx.fillStyle = '#10222a'; ctx.font = '700 ' + (b.r * (morse ? .85 : 1.1)) + 'px "Baloo 2",ui-rounded,system-ui,sans-serif';
+            ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(morse ? label(b.ch) : b.ch, b.x, b.y + b.r * .06);
         }
         for (const p of bursts) {
             const k = p.t / .4;
@@ -110,5 +114,5 @@
     });
     $('go').addEventListener('click', start);
     addEventListener('blur', () => { if (running) { running = false; $('title').textContent = 'Paused'; $('msg').textContent = 'Click back in to keep going.'; $('go').textContent = 'Resume'; panel.hidden = false; paused = true; } });
-    setLives();
+    if (morse) $('msg').textContent = 'Each circle shows a Morse code pattern. Press the letter it spells before it reaches the bottom. Five misses and it\u2019s over.';    setLives();
 })();

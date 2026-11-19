@@ -1,0 +1,3 @@
+C:\Users\Wills\source\repos\letter_drop\letter_drop\obj\Debug\letter_drop.njsproj.AssemblyReference.cache
+C:\Users\Wills\source\repos\letter_drop\letter_drop\obj\Debug\letter_drop.njsproj.CoreCompileInputs.cache
+C:\Users\Wills\source\repos\letter_drop\letter_drop\bin\Microsoft.NodejsTools.WebRole.dll
